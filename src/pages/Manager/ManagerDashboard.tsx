@@ -26,7 +26,7 @@ const ManagerDashboard = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setExpenses(res.data.expenses); // ✅ Make sure backend sends { expenses: [...] }
+      setExpenses(res.data.expenses); // ✅ Ensure backend sends { expenses: [...] }
     } catch (err) {
       console.error('Error fetching manager expenses:', err);
       setExpenses([]);
@@ -53,26 +53,22 @@ const ManagerDashboard = () => {
     }
   };
 
-  // Filter expenses based on selected filter
-  const filterExpenses = (status: 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED') => {
-    if (status === 'ALL') {
-      setFilteredExpenses(expenses);
-    } else {
-      setFilteredExpenses(expenses.filter((exp) => exp.status === status));
-    }
-  };
-
   useEffect(() => {
     fetchExpenses();
   }, []);
 
   useEffect(() => {
-    filterExpenses(filter);
+    if (filter === 'ALL') {
+      setFilteredExpenses(expenses);
+    } else {
+      setFilteredExpenses(expenses.filter((exp) => exp.status === filter));
+    }
   }, [filter, expenses]);
 
   return (
     <div className="min-h-screen p-6 bg-gray-100">
       <h1 className="text-3xl font-bold mb-6 text-blue-700 text-center">Manager Dashboard</h1>
+
       <div className="flex justify-end mb-4">
         <LogoutButton />
       </div>

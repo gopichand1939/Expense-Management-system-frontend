@@ -3,13 +3,13 @@ import axios from 'axios';
 import LogoutButton from '../../components/LogoutButton';
 import { useNavigate } from 'react-router-dom';
 
-
 type ExpenseItem = {
   id: string;
   category: string;
   amount: number;
   status: string;
   createdAt: string;
+  notes?: string;
   employee: {
     name: string;
     team: string;
@@ -17,16 +17,12 @@ type ExpenseItem = {
   receipt: string | null;
 };
 
-
-
-
 const AdminDashboard = () => {
   const [teamData, setTeamData] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
-  // ✅ Fetch all team budgets + approved expenses
   const fetchTeamData = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -35,7 +31,6 @@ const AdminDashboard = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-
       setTeamData(res.data.teamOverview || []);
       setExpenses(res.data.expenses || []);
     } catch (err) {
@@ -44,12 +39,10 @@ const AdminDashboard = () => {
     }
   };
 
-  // ✅ Budget update handler
   const handleSetBudget = async (team: string, budget: number) => {
     const token = localStorage.getItem('token');
     try {
-      const payload = { team, limit: Number(budget) }; // ✅ Ensure it's a number
-      console.log('Sending payload:', payload); // 🐞 debug
+      const payload = { team, limit: Number(budget) };
       await axios.post('http://localhost:5000/admin/set-budget', payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -60,7 +53,6 @@ const AdminDashboard = () => {
       setMessage('❌ Failed to set budget.');
     }
   };
-  
 
   useEffect(() => {
     fetchTeamData();
@@ -68,21 +60,31 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen p-6 bg-gray-100">
-      <h1 className="text-3xl font-bold mb-6 text-blue-700 text-center">Admin Dashboard</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-blue-700">Admin Dashboard</h1>
+        <LogoutButton />
+      </div>
 
       <div className="flex justify-between items-center mb-4">
-        <button
-          onClick={() => navigate('/admin/create-user')}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          ➕ Create User
-        </button>
-        <LogoutButton />
+        <div className="flex gap-2">
+          <button
+            onClick={() => navigate('/admin/create-user')}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            ➕ Create User
+          </button>
+          <button
+            onClick={() => navigate('/admin/charts')}
+            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+          >
+            📊 View Charts
+          </button>
+        </div>
       </div>
 
       {message && <p className="text-center text-green-600 mb-4">{message}</p>}
 
-      {/* ✅ TEAM BUDGET OVERVIEW */}
+      {/* ✅ Team Budgets */}
       <h2 className="text-xl font-semibold mb-2 text-gray-700">Team Budgets</h2>
       <div className="space-y-4">
         {teamData.length === 0 ? (
@@ -108,55 +110,55 @@ const AdminDashboard = () => {
         )}
       </div>
 
-      {/* ✅ APPROVED EXPENSE OVERVIEW */}
-     {/* ✅ Approved Expenses */}
-<h2 className="text-xl font-semibold mb-2 mt-6">Approved Expenses</h2>
-<table className="w-full bg-white rounded shadow">
-  <thead>
-    <tr className="bg-gray-100">
-      <th className="p-2 text-left">Team</th>
-      <th className="p-2 text-left">Employee</th>
-      <th className="p-2 text-left">Category</th>
-      <th className="p-2 text-left">Amount</th>
-      <th className="p-2 text-left">Date</th>
-      <th className="p-2 text-left">Status</th>
-      <th className="p-2 text-left">Receipt</th>
-    </tr>
-  </thead>
-  <tbody>
-    {expenses.length === 0 ? (
-      <tr>
-        <td colSpan={7} className="p-4 text-center text-gray-500">No approved expenses</td>
-      </tr>
-    ) : (
-      expenses.map((exp) => (
-        <tr key={exp.id} className="border-t">
-          <td className="p-2">{exp.employee?.team}</td>
-          <td className="p-2">{exp.employee?.name}</td>
-          <td className="p-2">{exp.category}</td>
-          <td className="p-2">₹{exp.amount}</td>
-          <td className="p-2">{new Date(exp.createdAt).toLocaleDateString('en-GB')}</td>
-          <td className="p-2">{exp.status}</td>
-          <td className="p-2">
-            {exp.receipt ? (
-              <a
-                href={exp.receipt}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline"
-              >
-                📎 View Receipt
-              </a>
-            ) : (
-              '—'
-            )}
-          </td>
-        </tr>
-      ))
-    )}
-  </tbody>
-</table>
-
+      {/* ✅ Approved Expenses Table */}
+      <h2 className="text-xl font-semibold mb-2 mt-6">Approved Expenses</h2>
+      <table className="w-full bg-white rounded shadow">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="p-2 text-left">Team</th>
+            <th className="p-2 text-left">Employee</th>
+            <th className="p-2 text-left">Category</th>
+            <th className="p-2 text-left">Amount</th>
+            <th className="p-2 text-left">Date</th>
+            <th className="p-2 text-left">Status</th>
+            <th className="p-2 text-left">Notes</th>
+            <th className="p-2 text-left">Receipt</th>
+          </tr>
+        </thead>
+        <tbody>
+          {expenses.length === 0 ? (
+            <tr>
+              <td colSpan={8} className="p-4 text-center text-gray-500">No approved expenses</td>
+            </tr>
+          ) : (
+            expenses.map((exp) => (
+              <tr key={exp.id} className="border-t">
+                <td className="p-2">{exp.employee?.team}</td>
+                <td className="p-2">{exp.employee?.name}</td>
+                <td className="p-2">{exp.category}</td>
+                <td className="p-2">₹{exp.amount}</td>
+                <td className="p-2">{new Date(exp.createdAt).toLocaleDateString('en-GB')}</td>
+                <td className="p-2">{exp.status}</td>
+                <td className="p-2">{exp.notes || '—'}</td>
+                <td className="p-2">
+                  {exp.receipt ? (
+                    <a
+                      href={`http://localhost:5000/uploads/${exp.receipt}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline"
+                    >
+                      📎 View Receipt
+                    </a>
+                  ) : (
+                    '—'
+                  )}
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 };

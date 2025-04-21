@@ -1,39 +1,42 @@
-import { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
-      const response = await axios.post('http://localhost:5000/auth/login', {
+      const response = await axios.post("http://localhost:5000/auth/login", {
         email,
-        password,
+        password
       });
 
       const { token } = response.data;
-      localStorage.setItem('token', token);
+      localStorage.setItem("token", token);
 
-      const userRole = JSON.parse(atob(token.split('.')[1])).role;
+      const userRole = JSON.parse(atob(token.split(".")[1])).role;
 
-      if (userRole === 'ADMIN') navigate('/admin/dashboard');
-      else if (userRole === 'MANAGER') navigate('/manager/dashboard');
-      else if (userRole === 'EMPLOYEE') navigate('/employee/dashboard');
+      if (userRole === "ADMIN") navigate("/admin/dashboard");
+      else if (userRole === "MANAGER") navigate("/manager/dashboard");
+      else if (userRole === "EMPLOYEE") navigate("/employee/dashboard");
     } catch (err: any) {
-      setError('Invalid credentials');
+      setError("Invalid credentials");
     }
   };
 
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
-      <form onSubmit={handleLogin} className="bg-white p-8 rounded-xl shadow-lg w-96 space-y-4">
+      <form
+        onSubmit={handleLogin}
+        className="bg-white p-8 rounded-xl shadow-lg w-96 space-y-4"
+      >
         <h2 className="text-2xl font-bold text-center">Login</h2>
 
         {error && <p className="text-red-500 text-sm text-center">{error}</p>}
